@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import type React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface RepositoryInputProps {
-  onSearch: (url: string) => void
-  loading: boolean
+  onSearch: (url: string) => void;
+  loading: boolean;
 }
 
 export function RepositoryInput({ onSearch, loading }: RepositoryInputProps) {
-  const [url, setUrl] = useState("")
+  const [url, setUrl] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (url.trim()) {
-      let fullUrl = url.trim()
+      let fullUrl = url.trim();
       if (!fullUrl.includes("github.com")) {
-        fullUrl = `https://github.com/${fullUrl}`
+        fullUrl = `https://github.com/${fullUrl}`;
       } else if (!fullUrl.startsWith("http")) {
-        fullUrl = `https://${fullUrl}`
+        fullUrl = `https://${fullUrl}`;
       }
-      onSearch(fullUrl)
+      onSearch(fullUrl);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-3">
@@ -39,10 +39,10 @@ export function RepositoryInput({ onSearch, loading }: RepositoryInputProps) {
       <Button
         type="submit"
         disabled={loading || !url.trim()}
-        className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground font-medium px-4 sm:px-6 transition-all duration-200 text-xs sm:text-sm whitespace-nowrap"
+        className="from-primary to-secondary text-primary-foreground bg-gradient-to-r px-4 text-xs font-medium whitespace-nowrap transition-all duration-200 hover:opacity-90 sm:px-6 sm:text-sm"
       >
         {loading ? "Loading..." : "Explore"}
       </Button>
     </form>
-  )
+  );
 }

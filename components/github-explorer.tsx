@@ -1,69 +1,73 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { RepositoryInput } from "./repository-input"
-import { LocalFileUpload } from "./local-file-upload"
-import { FileTree } from "./file-tree"
-import { FilePreview } from "./file-preview"
-import { ThemeToggle } from "./theme-toggle"
-import type { GitHubFile } from "@/lib/types"
+import { useState, useEffect } from "react";
+import { RepositoryInput } from "./repository-input";
+import { LocalFileUpload } from "./local-file-upload";
+import { FileTree } from "./file-tree";
+import { FilePreview } from "./file-preview";
+import { ThemeToggle } from "./theme-toggle";
+import type { GitHubFile } from "@/lib/types";
 
-const STORAGE_KEY = "file-explorer-state"
+const STORAGE_KEY = "file-explorer-state";
 
 interface StoredState {
-  mode: "github" | "local" | null
-  repoUrl: string
-  timestamp: number
+  mode: "github" | "local" | null;
+  repoUrl: string;
+  timestamp: number;
 }
 
 export function GitHubExplorer() {
-  const [repoUrl, setRepoUrl] = useState("")
-  const [files, setFiles] = useState<GitHubFile[]>([])
-  const [selectedFile, setSelectedFile] = useState<GitHubFile | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [explorationMode, setExplorationMode] = useState<"github" | "local" | null>(null)
-  const [localFiles, setLocalFiles] = useState<Map<string, File>>(new Map())
+  const [repoUrl, setRepoUrl] = useState("");
+  const [files, setFiles] = useState<GitHubFile[]>([]);
+  const [selectedFile, setSelectedFile] = useState<GitHubFile | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [explorationMode, setExplorationMode] = useState<
+    "github" | "local" | null
+  >(null);
+  const [localFiles, setLocalFiles] = useState<Map<string, File>>(new Map());
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        const state: StoredState = JSON.parse(stored)
+        const state: StoredState = JSON.parse(stored);
         if (state.mode === "github" && state.repoUrl) {
-          setRepoUrl(state.repoUrl)
+          setRepoUrl(state.repoUrl);
           // Auto-reload GitHub repo if recently accessed
-          handleFetchRepository(state.repoUrl)
+          handleFetchRepository(state.repoUrl);
         }
       } catch (err) {
-        console.error("Failed to restore state:", err)
+        console.error("Failed to restore state:", err);
       }
     }
-  }, [])
+  }, []);
 
   const handleFetchRepository = async (url: string) => {
-    setLoading(true)
-    setError("")
-    setFiles([])
-    setSelectedFile(null)
-    setExplorationMode("github")
+    setLoading(true);
+    setError("");
+    setFiles([]);
+    setSelectedFile(null);
+    setExplorationMode("github");
 
     try {
-      const match = url.match(/github\.com\/([^/]+)\/([^/]+)(\/.*)?/)
+      const match = url.match(/github\.com\/([^/]+)\/([^/]+)(\/.*)?/);
       if (!match) {
-        throw new Error("Invalid GitHub URL format")
+        throw new Error("Invalid GitHub URL format");
       }
 
-      const [, owner, repo] = match
-      const response = await fetch(`/api/github/files?owner=${owner}&repo=${repo}`)
+      const [, owner, repo] = match;
+      const response = await fetch(
+        `/api/github/files?owner=${owner}&repo=${repo}`,
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch repository files")
+        throw new Error("Failed to fetch repository files");
       }
 
-      const data = await response.json()
-      setFiles(data.files)
-      setRepoUrl(url)
+      const data = await response.json();
+      setFiles(data.files);
+      setRepoUrl(url);
 
       localStorage.setItem(
         STORAGE_KEY,
@@ -72,21 +76,24 @@ export function GitHubExplorer() {
           repoUrl: url,
           timestamp: Date.now(),
         }),
-      )
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleLocalFiles = (loadedFiles: GitHubFile[], fileMap: Map<string, File>) => {
-    setFiles(loadedFiles)
-    setLocalFiles(fileMap)
-    setSelectedFile(null)
-    setError("")
-    setRepoUrl("")
-    setExplorationMode("local")
+  const handleLocalFiles = (
+    loadedFiles: GitHubFile[],
+    fileMap: Map<string, File>,
+  ) => {
+    setFiles(loadedFiles);
+    setLocalFiles(fileMap);
+    setSelectedFile(null);
+    setError("");
+    setRepoUrl("");
+    setExplorationMode("local");
 
     localStorage.setItem(
       STORAGE_KEY,
@@ -95,30 +102,30 @@ export function GitHubExplorer() {
         repoUrl: "",
         timestamp: Date.now(),
       }),
-    )
-  }
+    );
+  };
 
   const handleReset = () => {
-    setFiles([])
-    setSelectedFile(null)
-    setRepoUrl("")
-    setLocalFiles(new Map())
-    setExplorationMode(null)
-    localStorage.removeItem(STORAGE_KEY)
-  }
+    setFiles([]);
+    setSelectedFile(null);
+    setRepoUrl("");
+    setLocalFiles(new Map());
+    setExplorationMode(null);
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex h-screen flex-col">
       {/* Header */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      <div className="border-border bg-card/50 sticky top-0 z-10 border-b backdrop-blur-sm">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
           {/* Top bar with title and theme toggle */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h1 className="from-primary to-secondary bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                 File Explorer
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
                 Explore GitHub repos or local files instantly
               </p>
             </div>
@@ -127,41 +134,57 @@ export function GitHubExplorer() {
 
           {!explorationMode ? (
             <div className="space-y-3 sm:space-y-4">
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
                 <div className="flex-1">
-                  <label className="text-xs text-muted-foreground block mb-2">GitHub Repository URL</label>
-                  <RepositoryInput onSearch={handleFetchRepository} loading={loading} />
+                  <label className="text-muted-foreground mb-2 block text-xs">
+                    GitHub Repository URL
+                  </label>
+                  <RepositoryInput
+                    onSearch={handleFetchRepository}
+                    loading={loading}
+                  />
                 </div>
-                <div className="hidden sm:flex text-muted-foreground items-end h-full pb-2 px-2">or</div>
+                <div className="text-muted-foreground hidden h-full items-end px-2 pb-2 sm:flex">
+                  or
+                </div>
                 <div className="flex-1">
-                  <label className="text-xs text-muted-foreground block mb-2">Upload Local Directory</label>
-                  <LocalFileUpload onFilesLoaded={handleLocalFiles} loading={loading} />
+                  <label className="text-muted-foreground mb-2 block text-xs">
+                    Upload Local Directory
+                  </label>
+                  <LocalFileUpload
+                    onFilesLoaded={handleLocalFiles}
+                    loading={loading}
+                  />
                 </div>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
               <div className="flex-1">
                 {explorationMode === "github" && (
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <span className="bg-primary/20 text-primary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
                       GitHub Repo
                     </span>
-                    <span className="text-muted-foreground text-xs sm:text-sm truncate">{repoUrl}</span>
+                    <span className="text-muted-foreground truncate text-xs sm:text-sm">
+                      {repoUrl}
+                    </span>
                   </div>
                 )}
                 {explorationMode === "local" && (
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary/20 text-secondary">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <span className="bg-secondary/20 text-secondary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
                       Local Files
                     </span>
-                    <span className="text-muted-foreground text-xs sm:text-sm">{files.length} items</span>
+                    <span className="text-muted-foreground text-xs sm:text-sm">
+                      {files.length} items
+                    </span>
                   </div>
                 )}
               </div>
               <button
                 onClick={handleReset}
-                className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:bg-accent/20 rounded-lg transition-colors"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent/20 w-full rounded-lg px-4 py-2 text-xs transition-colors sm:w-auto sm:text-sm"
               >
                 Change Source
               </button>
@@ -173,32 +196,41 @@ export function GitHubExplorer() {
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
         {error && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-            <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4 text-destructive text-sm">
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
+            <div className="bg-destructive/10 border-destructive/50 text-destructive rounded-lg border p-4 text-sm">
               {error}
             </div>
           </div>
         )}
 
         {files.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 h-full max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-6 overflow-hidden">
+          <div className="mx-auto grid h-full max-w-7xl grid-cols-1 gap-3 overflow-hidden px-4 py-3 sm:gap-6 sm:px-6 sm:py-6 lg:grid-cols-3">
             {/* File Tree */}
-            <div className="lg:col-span-1 min-h-0">
-              <FileTree files={files} selectedFile={selectedFile} onSelectFile={setSelectedFile} />
+            <div className="min-h-0 lg:col-span-1">
+              <FileTree
+                files={files}
+                selectedFile={selectedFile}
+                onSelectFile={setSelectedFile}
+              />
             </div>
 
             {/* File Preview */}
-            <div className="lg:col-span-2 min-h-0">
+            <div className="min-h-0 lg:col-span-2">
               <FilePreview file={selectedFile} localFiles={localFiles} />
             </div>
           </div>
         ) : (
           !loading &&
           !explorationMode && (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center px-4">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-lg bg-card flex items-center justify-center">
-                  <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex h-full items-center justify-center">
+              <div className="px-4 text-center">
+                <div className="bg-card mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg">
+                  <svg
+                    className="text-muted-foreground h-8 w-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -216,14 +248,14 @@ export function GitHubExplorer() {
         )}
 
         {loading && (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <div className="animate-spin w-8 h-8 border-2 border-border border-t-primary rounded-full mx-auto mb-4"></div>
+              <div className="border-border border-t-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2"></div>
               <p className="text-muted-foreground text-sm">Loading files...</p>
             </div>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
