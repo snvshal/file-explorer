@@ -125,47 +125,6 @@
   }
 }
 
-/* Add prose styling for markdown */
-.prose {
-  @apply text-foreground max-w-none;
-}
-
-.prose h1 {
-  @apply mt-8 mb-4 text-2xl font-bold;
-}
-
-.prose h2 {
-  @apply mt-6 mb-3 text-xl font-bold;
-}
-
-.prose h3 {
-  @apply mt-4 mb-2 text-lg font-bold;
-}
-
-.prose p {
-  @apply my-3 leading-relaxed;
-}
-
-.prose a {
-  @apply text-primary hover:underline;
-}
-
-.prose code {
-  @apply bg-background rounded px-2 py-1 font-mono text-sm;
-}
-
-.prose pre {
-  @apply bg-background border-border my-3 overflow-x-auto rounded border p-3;
-}
-
-.prose ul {
-  @apply my-2 ml-6 list-disc;
-}
-
-.prose li {
-  @apply my-1;
-}
-
 .shiki-wrapper pre {
   background-color: transparent !important;
   margin: 0;

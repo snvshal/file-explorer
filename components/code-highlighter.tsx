@@ -125,14 +125,14 @@ export function CodeHighlighter({
             {highlightedLines.map((lineHtml, index) => (
               <tr
                 key={index}
-                className="border-border/20 hover:bg-accent/5 border-b transition-colors"
+                className="border-border/20 hover:bg-accent/5 border-b transition-colors flex"
               >
                 <td className="bg-background text-muted-foreground border-border/20 sticky left-0 min-w-fit border-r px-2 py-1 text-right align-top select-none sm:px-4">
                   {index + 1}
                 </td>
                 <td
                   className={cn(
-                    "px-2 py-1 sm:px-4",
+                    "px-2 py-1 sm:px-4 flex-1",
                     wrap ? "break-all whitespace-pre-wrap" : "whitespace-pre",
                   )}
                 >

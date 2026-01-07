@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CodeHighlighter } from "./code-highlighter";
 import { MarkdownRenderer } from "./markdown-renderer";
 import type { GitHubFile } from "@/lib/types";
-import { Eye, Code, Copy, WrapText } from "lucide-react";
+import { Eye, Code, Copy, WrapText, Check } from "lucide-react";
 import { formatFileSize, isImageFile, isVideoFile } from "@/lib/file-utils";
 
 interface FilePreviewProps {
@@ -85,11 +85,20 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
   const isImage = file && isImageFile(file.name);
   const isVideo = file && isVideoFile(file.name);
 
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleCopyContent = async () => {
     try {
       await navigator.clipboard.writeText(content);
+
       setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
+
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+      timeoutRef.current = setTimeout(() => {
+        setCopySuccess(false);
+        timeoutRef.current = null;
+      }, 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
@@ -172,7 +181,11 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
                 }`}
                 title="Copy to clipboard"
               >
-                <Copy className="h-4 w-4" />
+                {copySuccess ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </button>
             </>
           )}
