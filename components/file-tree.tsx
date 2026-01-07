@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import type { GitHubFile } from "@/lib/types"
 import { getFileIcon } from "@/lib/file-utils"
@@ -42,8 +41,21 @@ export function FileTree({ files, selectedFile, onSelectFile }: FileTreeProps) {
     return d
   }
 
+  const sortItems = (items: GitHubFile[]): GitHubFile[] => {
+    return items.sort((a, b) => {
+      // Directories first
+      if (a.type !== b.type) {
+        return a.type === "dir" ? -1 : 1
+      }
+      // Then sort by name (case sensitive lexicographical order)
+      return a.name.localeCompare(b.name, undefined, { sensitivity: "variant" })
+    })
+  }
+
   const renderItems = (items: GitHubFile[], level = 0) => {
-    return items.map((file) => {
+    const sortedItems = sortItems(items)
+
+    return sortedItems.map((file) => {
       const isFolder = file.type === "dir"
       const isExpanded = expanded.has(file.path)
       const children = isFolder ? getChildren(file.path) : []
@@ -59,7 +71,7 @@ export function FileTree({ files, selectedFile, onSelectFile }: FileTreeProps) {
                 onSelectFile(file)
               }
             }}
-            className={`flex items-center gap-2 px-3 py-2 cursor-pointer text-xs sm:text-sm transition-colors group whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-2 cursor-pointer text-xs sm:text-sm transition-colors group ${
               selectedFile?.path === file.path
                 ? "bg-primary/20 text-primary"
                 : "hover:bg-accent/10 text-foreground/70 hover:text-foreground"
@@ -96,7 +108,7 @@ export function FileTree({ files, selectedFile, onSelectFile }: FileTreeProps) {
           {files.length}
         </span>
       </div>
-      <ScrollArea className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="py-2 pr-4">
           {rootItems.length > 0 ? (
             renderItems(rootItems)
@@ -104,7 +116,7 @@ export function FileTree({ files, selectedFile, onSelectFile }: FileTreeProps) {
             <div className="px-4 py-8 text-center text-muted-foreground text-xs sm:text-sm">No files found</div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

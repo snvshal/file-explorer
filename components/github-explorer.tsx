@@ -1,12 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { RepositoryInput } from "./repository-input"
 import { LocalFileUpload } from "./local-file-upload"
 import { FileTree } from "./file-tree"
 import { FilePreview } from "./file-preview"
 import { ThemeToggle } from "./theme-toggle"
 import type { GitHubFile } from "@/lib/types"
+
+const STORAGE_KEY = "file-explorer-state"
+
+interface StoredState {
+  mode: "github" | "local" | null
+  repoUrl: string
+  timestamp: number
+}
 
 export function GitHubExplorer() {
   const [repoUrl, setRepoUrl] = useState("")
@@ -16,6 +24,22 @@ export function GitHubExplorer() {
   const [error, setError] = useState("")
   const [explorationMode, setExplorationMode] = useState<"github" | "local" | null>(null)
   const [localFiles, setLocalFiles] = useState<Map<string, File>>(new Map())
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      try {
+        const state: StoredState = JSON.parse(stored)
+        if (state.mode === "github" && state.repoUrl) {
+          setRepoUrl(state.repoUrl)
+          // Auto-reload GitHub repo if recently accessed
+          handleFetchRepository(state.repoUrl)
+        }
+      } catch (err) {
+        console.error("Failed to restore state:", err)
+      }
+    }
+  }, [])
 
   const handleFetchRepository = async (url: string) => {
     setLoading(true)
@@ -40,6 +64,15 @@ export function GitHubExplorer() {
       const data = await response.json()
       setFiles(data.files)
       setRepoUrl(url)
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          mode: "github",
+          repoUrl: url,
+          timestamp: Date.now(),
+        }),
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
@@ -54,6 +87,15 @@ export function GitHubExplorer() {
     setError("")
     setRepoUrl("")
     setExplorationMode("local")
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        mode: "local",
+        repoUrl: "",
+        timestamp: Date.now(),
+      }),
+    )
   }
 
   const handleReset = () => {
@@ -62,6 +104,7 @@ export function GitHubExplorer() {
     setRepoUrl("")
     setLocalFiles(new Map())
     setExplorationMode(null)
+    localStorage.removeItem(STORAGE_KEY)
   }
 
   return (
@@ -92,7 +135,7 @@ export function GitHubExplorer() {
                 <div className="hidden sm:flex text-muted-foreground items-end h-full pb-2 px-2">or</div>
                 <div className="flex-1">
                   <label className="text-xs text-muted-foreground block mb-2">Upload Local Directory</label>
-                  <LocalFileUpload onFilesLoaded={handleLocalFiles} />
+                  <LocalFileUpload onFilesLoaded={handleLocalFiles} loading={loading} />
                 </div>
               </div>
             </div>

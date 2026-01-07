@@ -165,3 +165,43 @@
 .prose li {
   @apply my-1;
 }
+
+.shiki-wrapper pre {
+  background-color: transparent !important;
+  margin: 0;
+  padding: 1rem;
+}
+
+.shiki-wrapper code {
+  background-color: transparent !important;
+}
+
+/* Custom Scrollbar Styles - Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}

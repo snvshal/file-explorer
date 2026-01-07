@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { CodeHighlighter } from "./code-highlighter"
 import { MarkdownRenderer } from "./markdown-renderer"
 import type { GitHubFile } from "@/lib/types"
-import { Eye, Code } from "lucide-react"
+import { Eye, Code, Copy, WrapText } from "lucide-react"
 import { formatFileSize, isImageFile, isVideoFile } from "@/lib/file-utils"
 
 interface FilePreviewProps {
@@ -19,6 +18,8 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
   const [error, setError] = useState("")
   const [markdownView, setMarkdownView] = useState<"preview" | "code">("preview")
   const [mediaUrl, setMediaUrl] = useState<string>("")
+  const [codeWrap, setCodeWrap] = useState(true)
+  const [copySuccess, setCopySuccess] = useState(false)
 
   useEffect(() => {
     if (!file || file.type === "dir") {
@@ -78,6 +79,16 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
   const isImage = file && isImageFile(file.name)
   const isVideo = file && isVideoFile(file.name)
 
+  const handleCopyContent = async () => {
+    try {
+      await navigator.clipboard.writeText(content)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy:", err)
+    }
+  }
+
   if (!file) {
     return (
       <div className="bg-card border border-border rounded-lg p-6 h-full flex items-center justify-center">
@@ -97,40 +108,64 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col h-full">
       {/* Header */}
-      <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between flex-shrink-0">
+      <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between flex-shrink-0 gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm font-mono text-secondary truncate">{file.path}</p>
           <p className="text-xs text-muted-foreground mt-1">{formatFileSize(file.size)}</p>
         </div>
-        {isMarkdown && !loading && !error && (
-          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-            <button
-              onClick={() => setMarkdownView("preview")}
-              className={`p-2 rounded transition-colors ${
-                markdownView === "preview"
-                  ? "bg-primary/20 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
-              }`}
-              title="Preview"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setMarkdownView("code")}
-              className={`p-2 rounded transition-colors ${
-                markdownView === "code"
-                  ? "bg-primary/20 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
-              }`}
-              title="Source Code"
-            >
-              <Code className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {isMarkdown && !loading && !error && (
+            <>
+              <button
+                onClick={() => setMarkdownView("preview")}
+                className={`p-2 rounded transition-colors ${
+                  markdownView === "preview"
+                    ? "bg-primary/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
+                }`}
+                title="Preview"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setMarkdownView("code")}
+                className={`p-2 rounded transition-colors ${
+                  markdownView === "code"
+                    ? "bg-primary/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
+                }`}
+                title="Source Code"
+              >
+                <Code className="w-4 h-4" />
+              </button>
+            </>
+          )}
+          {!isImage && !isVideo && !loading && !error && (
+            <>
+              <button
+                onClick={() => setCodeWrap(!codeWrap)}
+                className="p-2 rounded text-muted-foreground hover:text-foreground hover:bg-accent/10 transition-colors"
+                title="Toggle wrap"
+              >
+                <WrapText className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleCopyContent}
+                className={`p-2 rounded transition-colors ${
+                  copySuccess
+                    ? "bg-green-500/20 text-green-500"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
+                }`}
+                title="Copy to clipboard"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
-      <ScrollArea className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <p className="text-muted-foreground text-sm">Loading file...</p>
@@ -157,12 +192,12 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
               <MarkdownRenderer content={content} />
             </div>
           ) : (
-            <CodeHighlighter code={content} filename={file.name} />
+            <CodeHighlighter code={content} filename={file.name} wrap={codeWrap} />
           )
         ) : (
-          <CodeHighlighter code={content} filename={file.name} />
+          <CodeHighlighter code={content} filename={file.name} wrap={codeWrap} />
         )}
-      </ScrollArea>
+      </div>
     </div>
   )
 }

@@ -1,13 +1,14 @@
 "use client"
-
-import { useEffect, useMemo, useState } from "react"
+import { cn } from "@/lib/utils"
+import { useEffect, useState, useMemo } from "react"
 
 interface CodeHighlighterProps {
   code: string
   filename?: string
+  wrap?: boolean
 }
 
-export function CodeHighlighter({ code, filename }: CodeHighlighterProps) {
+export function CodeHighlighter({ code, filename, wrap = true }: CodeHighlighterProps) {
   const [highlightedHtml, setHighlightedHtml] = useState<string>("")
   const [loading, setLoading] = useState(false)
 
@@ -16,6 +17,8 @@ export function CodeHighlighter({ code, filename }: CodeHighlighterProps) {
     const ext = name.split(".").pop()?.toLowerCase()
     const languageMap: Record<string, string> = {
       js: "javascript",
+      mjs: "javascript",
+      cjs: "javascript",
       jsx: "jsx",
       ts: "typescript",
       tsx: "tsx",
@@ -44,6 +47,15 @@ export function CodeHighlighter({ code, filename }: CodeHighlighterProps) {
     return languageMap[ext!] || "text"
   }
 
+  const escapeHtml = (text: string) => {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;")
+  }
+
   const language = getLanguage(filename)
 
   useEffect(() => {
@@ -67,19 +79,26 @@ export function CodeHighlighter({ code, filename }: CodeHighlighterProps) {
         setLoading(false)
       }
     }
-
     highlightCode()
   }, [code, language])
 
-  const lines = useMemo(() => code.split("\n"), [code])
-  const escapeHtml = (text: string) => {
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;")
-  }
+  // Extract lines from the highlighted HTML
+  const highlightedLines = useMemo(() => {
+    if (!highlightedHtml) return []
+    
+    // Parse the HTML to extract code lines
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(highlightedHtml, 'text/html')
+    const codeElement = doc.querySelector('code')
+    
+    if (!codeElement) return []
+    
+    // Get the HTML content and split by line breaks
+    const innerHTML = codeElement.innerHTML
+    const lines = innerHTML.split('\n')
+    
+    return lines
+  }, [highlightedHtml])
 
   if (loading) {
     return (
@@ -90,17 +109,23 @@ export function CodeHighlighter({ code, filename }: CodeHighlighterProps) {
   }
 
   return (
-    <div className="bg-background text-foreground font-mono text-xs sm:text-sm h-full overflow-auto">
-      <div className="inline-block min-w-full">
+    <div className={cn("bg-background text-foreground font-mono text-xs sm:text-sm h-full", wrap ? "overflow-auto" : "overflow-x-auto")}>
+      <div className={cn("inline-block", wrap ? "w-full" : "min-w-full")}>
         <table className="w-full border-collapse">
           <tbody>
-            {lines.map((line, index) => (
+            {highlightedLines.map((lineHtml, index) => (
               <tr key={index} className="border-b border-border/20 hover:bg-accent/5 transition-colors">
-                <td className="sticky left-0 bg-background/50 text-muted-foreground select-none px-2 sm:px-4 py-1 text-right min-w-fit border-r border-border/20">
+                <td className="sticky left-0 bg-background text-muted-foreground select-none px-2 sm:px-4 py-1 text-right min-w-fit border-r border-border/20 align-top">
                   {index + 1}
                 </td>
-                <td className="px-2 sm:px-4 py-1 w-full">
-                  <code className="text-foreground">{line || "\n"}</code>
+                <td className={cn(
+                  "px-2 sm:px-4 py-1",
+                  wrap ? "break-all whitespace-pre-wrap" : "whitespace-pre"
+                )}>
+                  <code 
+                    className="block"
+                    dangerouslySetInnerHTML={{ __html: lineHtml || '<br/>' }}
+                  />
                 </td>
               </tr>
             ))}
