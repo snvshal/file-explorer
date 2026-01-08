@@ -120,19 +120,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-}
-
-.shiki-wrapper pre {
-  background-color: transparent !important;
-  margin: 0;
-  padding: 1rem;
-}
-
-.shiki-wrapper code {
-  background-color: transparent !important;
 }
 
 /* Custom Scrollbar Styles - Webkit (Chrome, Safari, Edge) */
@@ -163,4 +154,9 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+}
+
+.stable-scrollbar {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }

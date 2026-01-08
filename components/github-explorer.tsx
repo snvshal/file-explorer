@@ -180,42 +180,59 @@ export function GitHubExplorer() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
-      {/* Header */}
-      <div className="border-border bg-card/50 sticky top-0 z-10 border-b backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 sm:py-4">
-          {/* Top bar with title and theme toggle */}
-          {/* <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                File Explorer
+    <div className="bg-background selection:bg-primary/20 flex h-screen flex-col">
+      {!explorationMode ? (
+        <div className="animate-in fade-in flex flex-1 flex-col items-center justify-center p-4 duration-500 sm:p-6">
+          <div className="absolute top-4 right-4">
+            <ThemeToggle />
+          </div>
+
+          <div className="w-full max-w-2xl space-y-8 text-center">
+            <div className="space-y-4">
+              <h1 className="from-foreground to-muted-foreground bg-gradient-to-br bg-clip-text pb-1 text-4xl font-extrabold tracking-tight text-transparent sm:text-5xl">
+                GitHub File Explorer
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Explore GitHub repos or local files instantly
+              <p className="text-muted-foreground mx-auto max-w-lg text-lg leading-relaxed sm:text-xl">
+                Instantly browse, read, and explore code repositories with a
+                beautiful, native-like experience.
               </p>
             </div>
-            <ThemeToggle />
-          </div> */}
 
-          {!explorationMode ? (
-            <div className="space-y-3 sm:space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
-                <div className="flex-1">
-                  <label className="text-muted-foreground mb-2 block text-xs">
-                    GitHub Repository URL
-                  </label>
+            <div className="bg-card/50 border-border/50 shadow-primary/5 rounded-2xl border p-6 shadow-xl backdrop-blur-sm sm:p-8">
+              <div className="flex flex-col gap-6">
+                <div className="space-y-3">
+                  <div className="text-foreground/80 flex items-center gap-2 text-sm font-medium">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                    </svg>
+                    Explore GitHub Repository
+                  </div>
                   <RepositoryInput
                     onSearch={handleFetchRepository}
                     loading={loading}
                   />
                 </div>
-                <div className="text-muted-foreground hidden h-full items-end px-2 pb-2 sm:flex">
-                  or
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="border-border/50 w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background text-muted-foreground px-2">
+                      Or upload local
+                    </span>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <label className="text-muted-foreground mb-2 block text-xs">
-                    Upload Local Directory
-                  </label>
+
+                <div className="space-y-3">
                   <LocalFileUpload
                     onFilesLoaded={handleLocalFiles}
                     loading={loading}
@@ -223,31 +240,77 @@ export function GitHubExplorer() {
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="flex items-center justify-between gap-4 sm:flex-row sm:gap-4">
-              <div className="flex-1">
+
+            <div className="text-muted-foreground/60 flex items-center justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500/50" />
+                No login required
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-500/50" />
+                Browser-based
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-purple-500/50" />
+                Open Source
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="border-border bg-card/80 sticky top-0 z-10 border-b backdrop-blur-md">
+          <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 overflow-hidden">
                 <button
                   onClick={handleReset}
-                  className="cursor-pointer"
-                  title="Change Source"
+                  className="flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-80"
+                  title="Back to Home"
                 >
-                  {explorationMode === "github" && (
-                    <span className="bg-primary/20 text-primary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
-                      GitHub Repo
-                    </span>
-                  )}
-                  {explorationMode === "local" && (
-                    <span className="bg-secondary/20 text-secondary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
-                      Local Files
-                    </span>
-                  )}
+                  <div className="bg-primary/10 text-primary rounded-md p-1.5">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                      <path d="M9 22V12h6v10" />
+                    </svg>
+                  </div>
+                  <span className="hidden sm:inline">File Explorer</span>
                 </button>
+
+                <div className="bg-border mx-1 h-4 w-[1px]" />
+
+                {explorationMode === "github" ? (
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-blue-500">
+                      GitHub
+                    </span>
+                    {/* <span className="truncate text-sm text-muted-foreground font-medium">
+                      {repoName}
+                    </span> */}
+                  </div>
+                ) : (
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-orange-500">
+                      Local
+                    </span>
+                    {/* <span className="truncate text-sm text-muted-foreground font-medium">
+                      {dirName}
+                    </span> */}
+                  </div>
+                )}
               </div>
               <ThemeToggle />
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
@@ -259,7 +322,7 @@ export function GitHubExplorer() {
           </div>
         )}
 
-        {files.length > 0 ? (
+        {!loading && !error && explorationMode && (
           <div className="mx-auto grid h-full max-w-7xl grid-cols-1 gap-3 overflow-hidden px-4 py-3 sm:gap-6 sm:px-6 sm:py-6 lg:grid-cols-3">
             {/* File Tree */}
             <div className="min-h-0 lg:col-span-1">
@@ -279,32 +342,6 @@ export function GitHubExplorer() {
               <FilePreview file={selectedFile} localFiles={localFiles} />
             </div>
           </div>
-        ) : (
-          !loading &&
-          !explorationMode && (
-            <div className="flex h-full items-center justify-center">
-              <div className="px-4 text-center">
-                <div className="bg-card mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg">
-                  <svg
-                    className="text-muted-foreground h-8 w-8"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17s4.5 10.747 10 10.747c5.523 0 10-4.998 10-11.247S17.523 6.253 12 6.253z"
-                    />
-                  </svg>
-                </div>
-                <p className="text-muted-foreground text-base sm:text-lg">
-                  Choose a GitHub repository or upload a local directory
-                </p>
-              </div>
-            </div>
-          )
         )}
 
         {loading && (

@@ -71,9 +71,9 @@ export function CodeHighlighter({
       sql: "sql",
       prisma: "prisma",
       dockerfile: "dockerfile",
-      dockerignore: "ignore",
-      gitignore: "ignore",
-      gitattributes: "ignore",
+      // dockerignore: "ignore",
+      // gitignore: "ignore",
+      // gitattributes: "ignore",
       lua: "lua",
       r: "r",
       dart: "dart",
@@ -89,7 +89,7 @@ export function CodeHighlighter({
       gql: "graphql",
       proto: "protobuf",
       // lock: "json",
-      config: "javascript",
+      // config: "javascript",
       conf: "ini",
       ex: "elixir",
       exs: "elixir",
@@ -173,6 +173,21 @@ export function CodeHighlighter({
       )}
     >
       <div className={cn("inline-block", wrap ? "w-full" : "min-w-full")}>
+        <span
+          className="invisible absolute px-2 text-right font-mono text-xs sm:px-4 sm:text-sm"
+          aria-hidden="true"
+          ref={(el) => {
+            if (el) {
+              document.documentElement.style.setProperty(
+                "--line-number-width",
+                `${el.offsetWidth}px`,
+              );
+            }
+          }}
+        >
+          {highlightedLines.length}
+        </span>
+
         <table className="w-full border-collapse">
           <tbody>
             {highlightedLines.map((lineHtml, index) => {
@@ -193,7 +208,13 @@ export function CodeHighlighter({
                       : "border-border/20 hover:bg-accent/5",
                   )}
                 >
-                  <td className="text-muted-foreground border-border/20 bg-card sticky left-0 min-w-fit border-r bg-transparent px-2 py-1 text-right align-top select-none sm:px-4">
+                  <td
+                    className="text-muted-foreground border-border/20 bg-card sticky left-0 border-r px-2 py-1 text-right align-top select-none sm:px-4"
+                    style={{
+                      width: "var(--line-number-width)",
+                      minWidth: "var(--line-number-width)",
+                    }}
+                  >
                     {lineNumber}
                   </td>
                   <td

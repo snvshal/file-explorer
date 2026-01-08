@@ -135,7 +135,7 @@ export function FileTree({
           {files.length}
         </span>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="stable-scrollbar min-h-0 flex-1 overflow-y-auto">
         <div className="py-2">
           {rootItems.length > 0 ? (
             renderItems(rootItems)
