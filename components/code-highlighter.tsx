@@ -7,12 +7,16 @@ interface CodeHighlighterProps {
   code: string;
   filename?: string;
   wrap?: boolean;
+  selectedRange?: { start: number; end: number } | null;
+  onLineClick?: (lineNumber: number) => void;
 }
 
 export function CodeHighlighter({
   code,
   filename,
   wrap = true,
+  selectedRange,
+  onLineClick,
 }: CodeHighlighterProps) {
   const [highlightedHtml, setHighlightedHtml] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -171,27 +175,41 @@ export function CodeHighlighter({
       <div className={cn("inline-block", wrap ? "w-full" : "min-w-full")}>
         <table className="w-full border-collapse">
           <tbody>
-            {highlightedLines.map((lineHtml, index) => (
-              <tr
-                key={index}
-                className="border-border/20 hover:bg-accent/5 flex border-b transition-colors"
-              >
-                <td className="bg-background text-muted-foreground border-border/20 bg-card sticky left-0 min-w-fit border-r px-2 py-1 text-right align-top select-none sm:px-4">
-                  {index + 1}
-                </td>
-                <td
+            {highlightedLines.map((lineHtml, index) => {
+              const lineNumber = index + 1;
+              const isSelected =
+                selectedRange &&
+                lineNumber >= selectedRange.start &&
+                lineNumber <= selectedRange.end;
+
+              return (
+                <tr
+                  key={index}
+                  onClick={() => onLineClick?.(lineNumber)}
                   className={cn(
-                    "flex-1 px-2 py-1 sm:px-4",
-                    wrap ? "break-all whitespace-pre-wrap" : "whitespace-pre",
+                    "flex cursor-pointer border-b transition-colors",
+                    isSelected
+                      ? "bg-primary/20 hover:bg-primary/30 border-primary/20"
+                      : "border-border/20 hover:bg-accent/5",
                   )}
                 >
-                  <code
-                    className="block"
-                    dangerouslySetInnerHTML={{ __html: lineHtml || "<br/>" }}
-                  />
-                </td>
-              </tr>
-            ))}
+                  <td className="text-muted-foreground border-border/20 bg-card sticky left-0 min-w-fit border-r bg-transparent px-2 py-1 text-right align-top select-none sm:px-4">
+                    {lineNumber}
+                  </td>
+                  <td
+                    className={cn(
+                      "flex-1 px-2 py-1 select-none sm:px-4",
+                      wrap ? "break-all whitespace-pre-wrap" : "whitespace-pre",
+                    )}
+                  >
+                    <code
+                      className="block"
+                      dangerouslySetInnerHTML={{ __html: lineHtml || "<br/>" }}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

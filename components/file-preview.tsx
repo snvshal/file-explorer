@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { CodeHighlighter } from "./code-highlighter";
 import { MarkdownRenderer } from "./markdown-renderer";
 import type { GitHubFile } from "@/lib/types";
-import { Eye, Code, Copy, WrapText, Check } from "lucide-react";
+import { Eye, Code, Copy, WrapText, Check, X } from "lucide-react";
 import { formatFileSize, isImageFile, isVideoFile } from "@/lib/file-utils";
 
 interface FilePreviewProps {
@@ -23,6 +23,15 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
   const [codeWrap, setCodeWrap] = useState(true);
   const [copySuccess, setCopySuccess] = useState(false);
   const [localFileSize, setLocalFileSize] = useState<number | null>(null);
+  const [selectionState, setSelectionState] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+
+  useEffect(() => {
+    // Reset selection when file changes
+    setSelectionState(null);
+  }, [file]);
 
   useEffect(() => {
     if (!file || file.type === "dir") {
@@ -94,11 +103,60 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const handleLineClick = (line: number) => {
+    setSelectionState((prev) => {
+      if (!prev) {
+        // First click: Start selection (single line)
+        return { start: line, end: line };
+      }
+
+      const { start, end } = prev;
+
+      if (line < start) {
+        // Click above start: Extend selection upward
+        return { start: line, end };
+      } else if (line > end) {
+        // Click below end: Extend selection downward
+        return { start, end: line };
+      } else if (line === start) {
+        // Click on start line
+        if (start === end) {
+          // If single line selected, deselect
+          return null;
+        } else {
+          // Shrink selection from top
+          return { start: line + 1, end };
+        }
+      } else if (line === end) {
+        // Click on end line (and start != end, covered above)
+        // Shrink selection from bottom
+        return { start, end: line - 1 };
+      }
+
+      // Click inside selection (not boundaries): Do nothing
+      return prev;
+    });
+  };
+
   const handleCopyContent = async () => {
     try {
-      await navigator.clipboard.writeText(content);
+      let textToCopy = content;
+
+      if (selectionState) {
+        const lines = content.split("\n");
+        // Ensure bounds are valid
+        const startLine = Math.max(1, selectionState.start);
+        const endLine = Math.min(lines.length, selectionState.end);
+
+        const selectedLines = lines.slice(startLine - 1, endLine);
+        textToCopy = selectedLines.join("\n");
+      }
+
+      await navigator.clipboard.writeText(textToCopy);
 
       setCopySuccess(true);
+      // Clear selection after copy
+      setSelectionState(null);
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
@@ -181,21 +239,49 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
                   <WrapText className="h-4 w-4" />
                 </button>
               )}
-              <button
-                onClick={handleCopyContent}
-                className={`rounded p-2 transition-colors ${
-                  copySuccess
-                    ? "bg-green-500/20 text-green-500"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
-                }`}
-                title="Copy to clipboard"
-              >
-                {copySuccess ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </button>
+              {selectionState ? (
+                <div className="bg-primary/10 border-primary/20 flex items-center gap-0.5 rounded-md border p-0.5">
+                  <button
+                    onClick={handleCopyContent}
+                    className={`rounded p-1.5 transition-colors ${
+                      copySuccess
+                        ? "bg-green-500/20 text-green-500"
+                        : "text-primary hover:bg-primary/10"
+                    }`}
+                    title="Copy selected lines"
+                  >
+                    {copySuccess ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <div className="bg-primary/20 h-4 w-[1px]" />
+                  <button
+                    onClick={() => setSelectionState(null)}
+                    className="text-primary/70 hover:text-primary hover:bg-primary/10 rounded p-1.5 transition-colors"
+                    title="Clear selection"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleCopyContent}
+                  className={`rounded p-2 transition-colors ${
+                    copySuccess
+                      ? "bg-green-500/20 text-green-500"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
+                  }`}
+                  title="Copy file content"
+                >
+                  {copySuccess ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </button>
+              )}
             </>
           )}
         </div>
@@ -235,6 +321,8 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
             code={content}
             filename={file.name}
             wrap={codeWrap}
+            selectedRange={selectionState}
+            onLineClick={handleLineClick}
           />
         )}
       </div>

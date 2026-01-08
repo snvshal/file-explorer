@@ -224,7 +224,7 @@ export function GitHubExplorer() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex items-center justify-between gap-4 sm:flex-row sm:gap-4">
               <div className="flex-1">
                 <button
                   onClick={handleReset}
@@ -232,20 +232,14 @@ export function GitHubExplorer() {
                   title="Change Source"
                 >
                   {explorationMode === "github" && (
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <span className="bg-primary/20 text-primary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
-                        GitHub Repo
-                      </span>
-                      {/* <span className="text-muted-foreground text-xs sm:text-sm truncate font-semibold">{repoName}</span> */}
-                    </div>
+                    <span className="bg-primary/20 text-primary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+                      GitHub Repo
+                    </span>
                   )}
                   {explorationMode === "local" && (
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <span className="bg-secondary/20 text-secondary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
-                        Local Files
-                      </span>
-                      {/* <span className="text-muted-foreground text-xs sm:text-sm font-semibold">{dirName}</span> */}
-                    </div>
+                    <span className="bg-secondary/20 text-secondary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+                      Local Files
+                    </span>
                   )}
                 </button>
               </div>
