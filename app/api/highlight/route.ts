@@ -2,11 +2,13 @@ import { codeToHtml } from "shiki";
 
 export async function POST(request: Request) {
   try {
-    const { code, lang = "text" } = await request.json();
+    const { code, lang = "text", theme } = await request.json();
+
+    const shikiTheme = theme === "light" ? "github-light" : "github-dark";
 
     const html = await codeToHtml(code, {
       lang,
-      theme: "github-dark",
+      theme: shikiTheme,
     });
 
     return Response.json({ html });

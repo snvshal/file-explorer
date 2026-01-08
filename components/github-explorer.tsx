@@ -7,17 +7,25 @@ import { FileTree } from "./file-tree";
 import { FilePreview } from "./file-preview";
 import { ThemeToggle } from "./theme-toggle";
 import type { GitHubFile } from "@/lib/types";
+import {
+  restoreDirectoryAccess,
+  readDirectory,
+} from "@/lib/file-system-handler";
 
 const STORAGE_KEY = "file-explorer-state";
 
 interface StoredState {
   mode: "github" | "local" | null;
   repoUrl: string;
+  repoName: string;
+  dirName: string;
   timestamp: number;
 }
 
 export function GitHubExplorer() {
   const [repoUrl, setRepoUrl] = useState("");
+  const [repoName, setRepoName] = useState("");
+  const [dirName, setDirName] = useState("");
   const [files, setFiles] = useState<GitHubFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<GitHubFile | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,22 +33,36 @@ export function GitHubExplorer() {
   const [explorationMode, setExplorationMode] = useState<
     "github" | "local" | null
   >(null);
-  const [localFiles, setLocalFiles] = useState<Map<string, File>>(new Map());
+  const [localFiles, setLocalFiles] = useState<
+    Map<string, FileSystemFileHandle>
+  >(new Map());
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const state: StoredState = JSON.parse(stored);
-        if (state.mode === "github" && state.repoUrl) {
-          setRepoUrl(state.repoUrl);
-          // Auto-reload GitHub repo if recently accessed
-          handleFetchRepository(state.repoUrl);
+    const initializeApp = async () => {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const state: StoredState = JSON.parse(stored);
+          if (state.mode === "github" && state.repoUrl && state.repoName) {
+            setRepoUrl(state.repoUrl);
+            setRepoName(state.repoName);
+            handleFetchRepository(state.repoUrl);
+          } else if (state.mode === "local" && state.dirName) {
+            const restored = await restoreDirectoryAccess();
+            if (restored) {
+              setDirName(restored.dirName);
+              setFiles(restored.files);
+              setLocalFiles(restored.fileMap);
+              setExplorationMode("local");
+            }
+          }
+        } catch (err) {
+          console.error("Failed to restore state:", err);
         }
-      } catch (err) {
-        console.error("Failed to restore state:", err);
       }
-    }
+    };
+
+    initializeApp();
   }, []);
 
   const handleFetchRepository = async (url: string) => {
@@ -49,6 +71,7 @@ export function GitHubExplorer() {
     setFiles([]);
     setSelectedFile(null);
     setExplorationMode("github");
+    setDirName("");
 
     try {
       const match = url.match(/github\.com\/([^/]+)\/([^/]+)(\/.*)?/);
@@ -68,12 +91,15 @@ export function GitHubExplorer() {
       const data = await response.json();
       setFiles(data.files);
       setRepoUrl(url);
+      setRepoName(repo);
 
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
           mode: "github",
           repoUrl: url,
+          repoName: repo,
+          dirName: "",
           timestamp: Date.now(),
         }),
       );
@@ -86,13 +112,16 @@ export function GitHubExplorer() {
 
   const handleLocalFiles = (
     loadedFiles: GitHubFile[],
-    fileMap: Map<string, File>,
+    fileMap: Map<string, FileSystemFileHandle>,
+    dirName: string,
   ) => {
     setFiles(loadedFiles);
     setLocalFiles(fileMap);
+    setDirName(dirName);
     setSelectedFile(null);
     setError("");
     setRepoUrl("");
+    setRepoName("");
     setExplorationMode("local");
 
     localStorage.setItem(
@@ -100,15 +129,51 @@ export function GitHubExplorer() {
       JSON.stringify({
         mode: "local",
         repoUrl: "",
+        repoName: "",
+        dirName: dirName,
         timestamp: Date.now(),
       }),
     );
+  };
+
+  const handleExpandFolder = async (path: string) => {
+    if (explorationMode !== "local") return;
+
+    try {
+      const { files: newFiles, fileMap: newFileMap } =
+        await readDirectory(path);
+
+      setFiles((prev) => {
+        const existingPaths = new Set(prev.map((f) => f.path));
+        const uniqueNewFiles = newFiles.filter(
+          (f) => !existingPaths.has(f.path),
+        );
+        if (uniqueNewFiles.length === 0) return prev;
+        return [...prev, ...uniqueNewFiles];
+      });
+
+      setLocalFiles((prev) => {
+        const next = new Map(prev);
+        let changed = false;
+        for (const [k, v] of newFileMap) {
+          if (!next.has(k)) {
+            next.set(k, v);
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    } catch (err) {
+      console.error(`Failed to load directory ${path}:`, err);
+    }
   };
 
   const handleReset = () => {
     setFiles([]);
     setSelectedFile(null);
     setRepoUrl("");
+    setRepoName("");
+    setDirName("");
     setLocalFiles(new Map());
     setExplorationMode(null);
     localStorage.removeItem(STORAGE_KEY);
@@ -118,19 +183,19 @@ export function GitHubExplorer() {
     <div className="flex h-screen flex-col">
       {/* Header */}
       <div className="border-border bg-card/50 sticky top-0 z-10 border-b backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 sm:py-4">
           {/* Top bar with title and theme toggle */}
-          <div className="mb-4 flex items-center justify-between">
+          {/* <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="from-primary to-secondary bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 File Explorer
               </h1>
-              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Explore GitHub repos or local files instantly
               </p>
             </div>
             <ThemeToggle />
-          </div>
+          </div> */}
 
           {!explorationMode ? (
             <div className="space-y-3 sm:space-y-4">
@@ -161,33 +226,30 @@ export function GitHubExplorer() {
           ) : (
             <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
               <div className="flex-1">
-                {explorationMode === "github" && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <span className="bg-primary/20 text-primary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
-                      GitHub Repo
-                    </span>
-                    <span className="text-muted-foreground truncate text-xs sm:text-sm">
-                      {repoUrl}
-                    </span>
-                  </div>
-                )}
-                {explorationMode === "local" && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <span className="bg-secondary/20 text-secondary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
-                      Local Files
-                    </span>
-                    <span className="text-muted-foreground text-xs sm:text-sm">
-                      {files.length} items
-                    </span>
-                  </div>
-                )}
+                <button
+                  onClick={handleReset}
+                  className="cursor-pointer"
+                  title="Change Source"
+                >
+                  {explorationMode === "github" && (
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <span className="bg-primary/20 text-primary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+                        GitHub Repo
+                      </span>
+                      {/* <span className="text-muted-foreground text-xs sm:text-sm truncate font-semibold">{repoName}</span> */}
+                    </div>
+                  )}
+                  {explorationMode === "local" && (
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <span className="bg-secondary/20 text-secondary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+                        Local Files
+                      </span>
+                      {/* <span className="text-muted-foreground text-xs sm:text-sm font-semibold">{dirName}</span> */}
+                    </div>
+                  )}
+                </button>
               </div>
-              <button
-                onClick={handleReset}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent/20 w-full rounded-lg px-4 py-2 text-xs transition-colors sm:w-auto sm:text-sm"
-              >
-                Change Source
-              </button>
+              <ThemeToggle />
             </div>
           )}
         </div>
@@ -211,6 +273,10 @@ export function GitHubExplorer() {
                 files={files}
                 selectedFile={selectedFile}
                 onSelectFile={setSelectedFile}
+                sourceTitle={explorationMode === "github" ? repoName : dirName}
+                onExpandFolder={
+                  explorationMode === "local" ? handleExpandFolder : undefined
+                }
               />
             </div>
 

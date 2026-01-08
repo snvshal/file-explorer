@@ -9,19 +9,33 @@ interface FileTreeProps {
   files: GitHubFile[];
   selectedFile: GitHubFile | null;
   onSelectFile: (file: GitHubFile) => void;
+  sourceTitle?: string;
+  onExpandFolder?: (path: string) => Promise<void>;
 }
 
-export function FileTree({ files, selectedFile, onSelectFile }: FileTreeProps) {
+export function FileTree({
+  files,
+  selectedFile,
+  onSelectFile,
+  sourceTitle = "Files",
+  onExpandFolder,
+}: FileTreeProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  const toggleFolder = (path: string) => {
+  const toggleFolder = async (path: string) => {
     const newExpanded = new Set(expanded);
     if (newExpanded.has(path)) {
       newExpanded.delete(path);
+      setExpanded(newExpanded);
     } else {
       newExpanded.add(path);
+      setExpanded(newExpanded);
+
+      // Lazy load content if handler provided
+      if (onExpandFolder) {
+        await onExpandFolder(path);
+      }
     }
-    setExpanded(newExpanded);
   };
 
   const getChildren = (path: string): GitHubFile[] => {
@@ -113,16 +127,16 @@ export function FileTree({ files, selectedFile, onSelectFile }: FileTreeProps) {
 
   return (
     <div className="bg-card border-border flex h-full flex-col overflow-hidden rounded-lg border">
-      <div className="border-border flex flex-shrink-0 items-center justify-between border-b px-3 py-2 sm:px-4 sm:py-3">
-        <h2 className="text-foreground text-xs font-semibold sm:text-sm">
-          Files
+      <div className="border-border flex flex-shrink-0 items-center justify-between gap-2 border-b px-3 py-2 sm:px-4 sm:py-3">
+        <h2 className="text-foreground truncate text-xs font-semibold sm:text-sm">
+          {sourceTitle}
         </h2>
-        <span className="bg-secondary/20 text-secondary ring-secondary/30 rounded-full px-2 py-1 text-xs font-medium ring-1">
+        <span className="bg-secondary/20 text-secondary ring-secondary/30 flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium ring-1">
           {files.length}
         </span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="py-2 pr-4">
+        <div className="py-2">
           {rootItems.length > 0 ? (
             renderItems(rootItems)
           ) : (

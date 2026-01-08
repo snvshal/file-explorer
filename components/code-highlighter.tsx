@@ -1,5 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 import { useEffect, useState, useMemo } from "react";
 
 interface CodeHighlighterProps {
@@ -15,6 +16,7 @@ export function CodeHighlighter({
 }: CodeHighlighterProps) {
   const [highlightedHtml, setHighlightedHtml] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const { theme, resolvedTheme } = useTheme();
 
   const getLanguage = (name?: string) => {
     if (!name) return "text";
@@ -27,26 +29,69 @@ export function CodeHighlighter({
       ts: "typescript",
       tsx: "tsx",
       py: "python",
-      rb: "ruby",
-      php: "php",
+      java: "java",
+      cs: "csharp",
+      cpp: "cpp",
+      cxx: "cpp",
+      hh: "cpp",
+      hxx: "cpp",
+      c: "c",
+      h: "c",
+      hpp: "cpp",
       go: "go",
       rs: "rust",
-      sql: "sql",
+      kt: "kotlin",
+      swift: "swift",
+      rb: "ruby",
+      php: "php",
       html: "html",
       css: "css",
       scss: "scss",
+      less: "less",
       json: "json",
+      jsonc: "json",
+      toml: "toml",
+      ini: "ini",
+      env: "bash",
       xml: "xml",
       yaml: "yaml",
       yml: "yaml",
       md: "markdown",
+      mdx: "mdx",
+      rst: "rst",
       sh: "bash",
       bash: "bash",
-      java: "java",
-      cpp: "cpp",
-      c: "c",
-      kt: "kotlin",
-      swift: "swift",
+      zsh: "bash",
+      fish: "fish",
+      ps1: "powershell",
+      sql: "sql",
+      prisma: "prisma",
+      dockerfile: "dockerfile",
+      dockerignore: "ignore",
+      gitignore: "ignore",
+      gitattributes: "ignore",
+      lua: "lua",
+      r: "r",
+      dart: "dart",
+      scala: "scala",
+      groovy: "groovy",
+      perl: "perl",
+      vue: "vue",
+      svelte: "svelte",
+      astro: "astro",
+      bat: "batch",
+      cmd: "batch",
+      graphql: "graphql",
+      gql: "graphql",
+      proto: "protobuf",
+      // lock: "json",
+      config: "javascript",
+      conf: "ini",
+      ex: "elixir",
+      exs: "elixir",
+      hs: "haskell",
+      tf: "terraform",
+      tfvars: "terraform",
     };
     return languageMap[ext!] || "text";
   };
@@ -69,7 +114,11 @@ export function CodeHighlighter({
         const response = await fetch("/api/highlight", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code, lang: language }),
+          body: JSON.stringify({
+            code,
+            lang: language,
+            theme: resolvedTheme ?? theme ?? "dark",
+          }),
         });
         const data = await response.json();
         if (data.html) {
@@ -84,7 +133,7 @@ export function CodeHighlighter({
       }
     };
     highlightCode();
-  }, [code, language]);
+  }, [code, language, resolvedTheme]);
 
   // Extract lines from the highlighted HTML
   const highlightedLines = useMemo(() => {
@@ -106,7 +155,7 @@ export function CodeHighlighter({
 
   if (loading) {
     return (
-      <div className="bg-background text-foreground flex h-32 items-center justify-center font-mono text-xs sm:text-sm">
+      <div className="flex h-32 items-center justify-center font-mono text-xs sm:text-sm">
         <p className="text-muted-foreground">Highlighting code...</p>
       </div>
     );
@@ -115,7 +164,7 @@ export function CodeHighlighter({
   return (
     <div
       className={cn(
-        "bg-background text-foreground h-full font-mono text-xs sm:text-sm",
+        "bg-card h-full font-mono text-xs sm:text-sm",
         wrap ? "overflow-auto" : "overflow-x-auto",
       )}
     >
@@ -125,14 +174,14 @@ export function CodeHighlighter({
             {highlightedLines.map((lineHtml, index) => (
               <tr
                 key={index}
-                className="border-border/20 hover:bg-accent/5 border-b transition-colors flex"
+                className="border-border/20 hover:bg-accent/5 flex border-b transition-colors"
               >
-                <td className="bg-background text-muted-foreground border-border/20 sticky left-0 min-w-fit border-r px-2 py-1 text-right align-top select-none sm:px-4">
+                <td className="bg-background text-muted-foreground border-border/20 bg-card sticky left-0 min-w-fit border-r px-2 py-1 text-right align-top select-none sm:px-4">
                   {index + 1}
                 </td>
                 <td
                   className={cn(
-                    "px-2 py-1 sm:px-4 flex-1",
+                    "flex-1 px-2 py-1 sm:px-4",
                     wrap ? "break-all whitespace-pre-wrap" : "whitespace-pre",
                   )}
                 >

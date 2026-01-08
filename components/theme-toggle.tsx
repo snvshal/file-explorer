@@ -16,30 +16,23 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="hover:bg-accent/10 rounded-lg p-2 transition-colors"
       aria-label="Toggle theme"
+      title="Toggle theme"
     >
-      {theme === "dark" ? (
-        <svg
-          className="h-5 w-5 text-yellow-400"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fillRule="evenodd"
-            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.293 2.293a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zm2.828 2.829a1 1 0 011.415 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 011.414-1.414zM10 7a3 3 0 110 6 3 3 0 010-6zm-7 7a1 1 0 110 2h1a1 1 0 110-2H3zm10 0a1 1 0 110 2h1a1 1 0 110-2h-1z"
-            clipRule="evenodd"
-          />
-        </svg>
-      ) : (
-        <svg
-          className="h-5 w-5 text-slate-700"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-        </svg>
-      )}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 18a6 6 0 0 0 0-12v12z" fill="currentColor" stroke="none" />
+      </svg>
     </button>
   );
 }

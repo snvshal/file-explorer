@@ -10,7 +10,7 @@ export const metadata = {
 export default function Home() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <main className="bg-background text-foreground min-h-screen">
+      <main className="bg-card/50 text-foreground min-h-screen">
         <GitHubExplorer />
       </main>
     </ThemeProvider>

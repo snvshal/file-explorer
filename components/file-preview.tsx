@@ -9,7 +9,7 @@ import { formatFileSize, isImageFile, isVideoFile } from "@/lib/file-utils";
 
 interface FilePreviewProps {
   file: GitHubFile | null;
-  localFiles?: Map<string, File>;
+  localFiles?: Map<string, FileSystemFileHandle>;
 }
 
 export function FilePreview({ file, localFiles }: FilePreviewProps) {
@@ -22,12 +22,14 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
   const [mediaUrl, setMediaUrl] = useState<string>("");
   const [codeWrap, setCodeWrap] = useState(true);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [localFileSize, setLocalFileSize] = useState<number | null>(null);
 
   useEffect(() => {
     if (!file || file.type === "dir") {
       setContent("");
       setMediaUrl("");
       setError("");
+      setLocalFileSize(null);
       return;
     }
 
@@ -35,18 +37,30 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
     setError("");
     setMarkdownView("preview");
     setMediaUrl("");
+    setLocalFileSize(null);
 
     const fetchContent = async () => {
       try {
         const isLocalFile = localFiles && localFiles.has(file.path);
 
-        if (isImageFile(file.name) || isVideoFile(file.name)) {
-          if (isLocalFile) {
-            const fileObj = localFiles.get(file.path);
-            if (!fileObj) throw new Error("File not found");
+        if (isLocalFile) {
+          const fileHandle = localFiles.get(file.path);
+          if (!fileHandle) throw new Error("File not found");
+
+          const fileObj = await fileHandle.getFile();
+          setLocalFileSize(fileObj.size);
+
+          if (isImageFile(file.name) || isVideoFile(file.name)) {
             const url = URL.createObjectURL(fileObj);
             setMediaUrl(url);
+            setContent("");
           } else {
+            const text = await fileObj.text();
+            setContent(text);
+          }
+        } else {
+          // GitHub Mode
+          if (isImageFile(file.name) || isVideoFile(file.name)) {
             const response = await fetch(
               `/api/github/file?url=${encodeURIComponent(file.url)}`,
             );
@@ -54,14 +68,7 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
             setMediaUrl(url);
-          }
-          setContent("");
-        } else {
-          if (isLocalFile) {
-            const fileObj = localFiles.get(file.path);
-            if (!fileObj) throw new Error("File not found");
-            const text = await fileObj.text();
-            setContent(text);
+            setContent("");
           } else {
             const response = await fetch(
               `/api/github/file?url=${encodeURIComponent(file.url)}`,
@@ -133,7 +140,7 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
             {file.path}
           </p>
           <p className="text-muted-foreground mt-1 text-xs">
-            {formatFileSize(file.size)}
+            {formatFileSize(localFileSize ?? file.size)}
           </p>
         </div>
         <div className="flex flex-shrink-0 items-center gap-1">
@@ -165,13 +172,15 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
           )}
           {!isImage && !isVideo && !loading && !error && (
             <>
-              <button
-                onClick={() => setCodeWrap(!codeWrap)}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded p-2 transition-colors"
-                title="Toggle wrap"
-              >
-                <WrapText className="h-4 w-4" />
-              </button>
+              {(!isMarkdown || markdownView !== "preview") && (
+                <button
+                  onClick={() => setCodeWrap((v) => !v)}
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded p-2 transition-colors"
+                  title="Toggle wrap"
+                >
+                  <WrapText className="h-4 w-4" />
+                </button>
+              )}
               <button
                 onClick={handleCopyContent}
                 className={`rounded p-2 transition-colors ${
@@ -217,18 +226,10 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
               className="border-border max-h-full max-w-full rounded-lg border"
             />
           </div>
-        ) : isMarkdown ? (
-          markdownView === "preview" ? (
-            <div className="p-3 sm:p-4">
-              <MarkdownRenderer content={content} />
-            </div>
-          ) : (
-            <CodeHighlighter
-              code={content}
-              filename={file.name}
-              wrap={codeWrap}
-            />
-          )
+        ) : isMarkdown && markdownView === "preview" ? (
+          <div className="p-3 sm:p-4">
+            <MarkdownRenderer content={content} />
+          </div>
         ) : (
           <CodeHighlighter
             code={content}
