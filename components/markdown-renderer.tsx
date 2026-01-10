@@ -57,7 +57,7 @@ export function MarkdownRenderer({
     };
 
     renderer.paragraph = ({ text }) => {
-      return `<p class="my-4 leading-relaxed text-foreground">${text}</p>`;
+      return `<p class="my-4 leading-relaxed text-foreground">${marked.parseInline(text)}</p>`;
     };
 
     renderer.image = ({ href, text }) => {
@@ -65,8 +65,8 @@ export function MarkdownRenderer({
       return `<figure class="my-6"><img src="${imageSrc}" alt="${text}" class="max-w-full h-auto rounded-lg border border-border/50" loading="lazy" /><figcaption class="text-xs text-muted-foreground mt-2 text-center">${text}</figcaption></figure>`;
     };
 
-    renderer.blockquote = ({ text }) => {
-      return `<blockquote class="border-l-4 border-primary pl-4 py-2 my-4 text-foreground/80 italic bg-accent/5 rounded-r">${text}</blockquote>`;
+    renderer.blockquote = ({ tokens }) => {
+      return `<blockquote class="markdown-blockquote border-l-4 border-primary pl-4 py-2 my-4 text-foreground/80 bg-accent/5 rounded-r">${marked.parser(tokens)}</blockquote>`;
     };
 
     renderer.code = ({ text, lang }) => {
