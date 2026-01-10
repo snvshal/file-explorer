@@ -4,6 +4,7 @@ export interface GitHubFile {
   type: "file" | "dir";
   size: number;
   url: string;
+  children?: GitHubFile[];
 }
 
 export interface GitHubTree {

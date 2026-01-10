@@ -1,18 +1,18 @@
-import { GitHubExplorer } from "@/components/github-explorer";
-import { ThemeProvider } from "@/components/theme-provider";
+"use client";
 
-export const metadata = {
-  title: "GitHub File Explorer - Quick Lookup",
-  description:
-    "Explore GitHub repository files and local directories with beautiful syntax highlighting and markdown rendering",
-};
+import { GitHubExplorer } from "@/components/github-explorer";
+import { useGitHubStore } from "@/lib/github-store";
 
 export default function Home() {
+  const { initialUrl, initialFilePath, urlError } = useGitHubStore();
+
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <main className="bg-card/50 text-foreground min-h-screen">
-        <GitHubExplorer />
-      </main>
-    </ThemeProvider>
+    <main className="bg-card/50 text-foreground min-h-screen">
+      <GitHubExplorer
+        initialUrl={initialUrl}
+        initialFilePath={initialFilePath}
+        urlError={urlError}
+      />
+    </main>
   );
 }

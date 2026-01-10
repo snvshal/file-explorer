@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       path: item.path,
       type: item.type === "tree" ? "dir" : "file",
       size: item.size || 0,
-      url: item.url,
+      url: `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${item.path}`, // directly use raw URL instead of git API URL
       rawUrl: `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${item.path}`,
     }));
 

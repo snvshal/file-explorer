@@ -22,14 +22,24 @@ interface StoredState {
   timestamp: number;
 }
 
-export function GitHubExplorer() {
+interface GitHubExplorerProps {
+  initialUrl?: string;
+  initialFilePath?: string;
+  urlError?: string;
+}
+
+export function GitHubExplorer({
+  initialUrl = "",
+  initialFilePath = "",
+  urlError = "",
+}: GitHubExplorerProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [repoName, setRepoName] = useState("");
   const [dirName, setDirName] = useState("");
   const [files, setFiles] = useState<GitHubFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<GitHubFile | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(urlError);
   const [explorationMode, setExplorationMode] = useState<
     "github" | "local" | null
   >(null);
@@ -63,7 +73,38 @@ export function GitHubExplorer() {
     };
 
     initializeApp();
-  }, []);
+
+    if (initialUrl) {
+      handleFetchRepository(initialUrl);
+    }
+  }, [initialUrl]);
+
+  useEffect(() => {
+    if (initialFilePath && files.length > 0 && !selectedFile) {
+      const fileToSelect = findFileByPath(files, initialFilePath);
+      if (fileToSelect) {
+        setSelectedFile(fileToSelect);
+      } else {
+        setError(`File not found: ${initialFilePath}`);
+      }
+    }
+  }, [files, initialFilePath, selectedFile]);
+
+  const findFileByPath = (
+    fileList: GitHubFile[],
+    targetPath: string,
+  ): GitHubFile | null => {
+    for (const file of fileList) {
+      if (file.path === targetPath || file.path === `/${targetPath}`) {
+        return file;
+      }
+      if (file.type === "dir" && file.children) {
+        const found = findFileByPath(file.children, targetPath);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
 
   const handleFetchRepository = async (url: string) => {
     setLoading(true);
@@ -85,6 +126,9 @@ export function GitHubExplorer() {
       );
 
       if (!response.ok) {
+        if (response.status === 504) {
+          throw new Error("Gateway Timeout: Please try later");
+        }
         throw new Error("Failed to fetch repository files");
       }
 
