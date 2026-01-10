@@ -70,13 +70,8 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
         } else {
           // GitHub Mode
           if (isImageFile(file.name) || isVideoFile(file.name)) {
-            const response = await fetch(
-              `/api/github/file?url=${encodeURIComponent(file.url)}`,
-            );
-            if (!response.ok) throw new Error("Failed to fetch file");
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            setMediaUrl(url);
+            const imageUrl = (file as any).rawUrl || file.url;
+            setMediaUrl(imageUrl);
             setContent("");
           } else {
             const response = await fetch(
@@ -314,7 +309,20 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
           </div>
         ) : isMarkdown && markdownView === "preview" ? (
           <div className="p-3 sm:p-4">
-            <MarkdownRenderer content={content} />
+            <MarkdownRenderer
+              content={content}
+              repoOwner={
+                typeof window !== "undefined"
+                  ? localStorage.getItem("current-repo-owner") || undefined
+                  : undefined
+              }
+              repoName={
+                typeof window !== "undefined"
+                  ? localStorage.getItem("current-repo-name") || undefined
+                  : undefined
+              }
+              filePath={file.path}
+            />
           </div>
         ) : (
           <CodeHighlighter

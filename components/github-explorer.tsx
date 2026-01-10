@@ -93,6 +93,10 @@ export function GitHubExplorer() {
       setRepoUrl(url);
       setRepoName(repo);
 
+      // Store repo info for image resolution in markdown
+      localStorage.setItem("current-repo-owner", owner);
+      localStorage.setItem("current-repo-name", repo);
+
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
@@ -177,6 +181,8 @@ export function GitHubExplorer() {
     setLocalFiles(new Map());
     setExplorationMode(null);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("current-repo-owner");
+    localStorage.removeItem("current-repo-name");
   };
 
   return (

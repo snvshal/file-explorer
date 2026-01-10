@@ -36,9 +36,10 @@ export async function GET(request: NextRequest) {
       type: item.type === "tree" ? "dir" : "file",
       size: item.size || 0,
       url: item.url,
+      rawUrl: `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${item.path}`,
     }));
 
-    return NextResponse.json({ files });
+    return NextResponse.json({ files, owner, repo });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch repository" },
