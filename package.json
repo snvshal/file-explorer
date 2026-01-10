@@ -17,6 +17,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "idb-keyval": "^6.2.2",
+    "ioredis": "^5.9.1",
     "lucide-react": "^0.454.0",
     "marked": "17.0.1",
     "next": "^16.1.1",

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getCachedValue, setCachedValue } from "@/lib/redis";
 
 export async function GET(request: NextRequest) {
   const owner = request.nextUrl.searchParams.get("owner");
@@ -9,6 +10,12 @@ export async function GET(request: NextRequest) {
       { error: "Missing owner or repo parameter" },
       { status: 400 },
     );
+  }
+
+  const cacheKey = `github:files:${owner}:${repo}`;
+  const cachedData = await getCachedValue(cacheKey);
+  if (cachedData) {
+    return NextResponse.json(cachedData);
   }
 
   try {
@@ -35,11 +42,15 @@ export async function GET(request: NextRequest) {
       path: item.path,
       type: item.type === "tree" ? "dir" : "file",
       size: item.size || 0,
-      url: `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${item.path}`, // directly use raw URL instead of git API URL
+      url: `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${item.path}`,
       rawUrl: `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${item.path}`,
     }));
 
-    return NextResponse.json({ files, owner, repo });
+    const result = { files, owner, repo };
+
+    await setCachedValue(cacheKey, result, 86400);
+
+    return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch repository" },

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getCachedValue, setCachedValue } from "@/lib/redis";
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get("url");
@@ -8,6 +9,14 @@ export async function GET(request: NextRequest) {
       { error: "Missing url parameter" },
       { status: 400 },
     );
+  }
+
+  const cacheKey = `github:file:${Buffer.from(url).toString("base64")}`;
+  const cachedData = await getCachedValue<string>(cacheKey);
+  if (cachedData) {
+    return new NextResponse(cachedData, {
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
   }
 
   try {
@@ -25,6 +34,9 @@ export async function GET(request: NextRequest) {
     }
 
     const text = await response.text();
+
+    await setCachedValue(cacheKey, text, 86400);
+
     return new NextResponse(text, {
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
