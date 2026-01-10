@@ -5,7 +5,12 @@ import { CodeHighlighter } from "./code-highlighter";
 import { MarkdownRenderer } from "./markdown-renderer";
 import type { GitHubFile } from "@/lib/types";
 import { Eye, Code, Copy, WrapText, Check, X } from "lucide-react";
-import { formatFileSize, isImageFile, isVideoFile } from "@/lib/file-utils";
+import {
+  formatFileSize,
+  isImageFile,
+  isVideoFile,
+  isAudioFile,
+} from "@/lib/file-utils";
 
 interface FilePreviewProps {
   file: GitHubFile | null;
@@ -59,7 +64,11 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
           const fileObj = await fileHandle.getFile();
           setLocalFileSize(fileObj.size);
 
-          if (isImageFile(file.name) || isVideoFile(file.name)) {
+          if (
+            isImageFile(file.name) ||
+            isVideoFile(file.name) ||
+            isAudioFile(file.name)
+          ) {
             const url = URL.createObjectURL(fileObj);
             setMediaUrl(url);
             setContent("");
@@ -69,9 +78,13 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
           }
         } else {
           // GitHub Mode
-          if (isImageFile(file.name) || isVideoFile(file.name)) {
-            const imageUrl = (file as any).rawUrl || file.url;
-            setMediaUrl(imageUrl);
+          if (
+            isImageFile(file.name) ||
+            isVideoFile(file.name) ||
+            isAudioFile(file.name)
+          ) {
+            const mediaUrl = (file as any).rawUrl || file.url;
+            setMediaUrl(mediaUrl);
             setContent("");
           } else {
             const response = await fetch(
@@ -95,6 +108,28 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
   const isMarkdown = file?.name.toLowerCase().endsWith(".md");
   const isImage = file && isImageFile(file.name);
   const isVideo = file && isVideoFile(file.name);
+  const isAudio = file && isAudioFile(file.name);
+
+  // clean up blob URLs when they change/unmount
+  const prevMediaUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      prevMediaUrlRef.current &&
+      prevMediaUrlRef.current.startsWith("blob:") &&
+      prevMediaUrlRef.current !== mediaUrl
+    ) {
+      URL.revokeObjectURL(prevMediaUrlRef.current);
+    }
+    prevMediaUrlRef.current = mediaUrl;
+    return () => {
+      if (
+        prevMediaUrlRef.current &&
+        prevMediaUrlRef.current.startsWith("blob:")
+      ) {
+        URL.revokeObjectURL(prevMediaUrlRef.current);
+      }
+    };
+  }, [mediaUrl]);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -223,7 +258,7 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
               </button>
             </>
           )}
-          {!isImage && !isVideo && !loading && !error && (
+          {!isImage && !isVideo && !isAudio && !loading && !error && (
             <>
               {(!isMarkdown || markdownView !== "preview") && (
                 <button
@@ -305,6 +340,14 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
               src={mediaUrl}
               controls
               className="border-border max-h-full max-w-full rounded-lg border"
+            />
+          </div>
+        ) : isAudio && mediaUrl ? (
+          <div className="flex min-h-full items-center justify-center p-4">
+            <audio
+              src={mediaUrl}
+              controls
+              className="border-border w-full rounded-full border md:mx-8"
             />
           </div>
         ) : isMarkdown && markdownView === "preview" ? (

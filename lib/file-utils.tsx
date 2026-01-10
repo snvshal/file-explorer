@@ -84,3 +84,10 @@ export function isVideoFile(filename: string): boolean {
   const ext = filename.split(".").pop()?.toLowerCase() || "";
   return ["mp4", "webm", "ogg", "mov", "avi", "mkv", "flv"].includes(ext);
 }
+
+export function isAudioFile(filename: string) {
+  const ext = filename.split(".").pop()?.toLowerCase();
+  return (
+    !!ext && ["mp3", "wav", "ogg", "m4a", "flac", "aac", "opus"].includes(ext)
+  );
+}
