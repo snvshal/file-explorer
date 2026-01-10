@@ -239,7 +239,7 @@ export function GitHubExplorer({
 
           <div className="w-full max-w-2xl space-y-8 text-center">
             <div className="space-y-4">
-              <h1 className="from-foreground to-muted-foreground bg-gradient-to-br bg-clip-text pb-1 text-4xl font-extrabold tracking-tight text-transparent sm:text-5xl">
+              <h1 className="from-foreground to-muted-foreground bg-linear-to-br bg-clip-text pb-1 text-4xl font-extrabold tracking-tight text-transparent sm:text-5xl">
                 GitHub File Explorer
               </h1>
               <p className="text-muted-foreground mx-auto max-w-lg text-lg leading-relaxed sm:text-xl">
@@ -334,7 +334,7 @@ export function GitHubExplorer({
                   <span className="hidden sm:inline">File Explorer</span>
                 </button>
 
-                <div className="bg-border mx-1 h-4 w-[1px]" />
+                <div className="bg-border mx-1 h-4 w-px" />
 
                 {explorationMode === "github" ? (
                   <div className="flex min-w-0 items-center gap-2">

@@ -222,7 +222,7 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
   return (
     <div className="bg-card border-border flex h-full flex-col overflow-hidden rounded-lg border">
       {/* Header */}
-      <div className="border-border bg-card/50 sticky top-0 z-10 flex flex-shrink-0 items-center justify-between gap-2 border-b px-3 py-2 backdrop-blur-sm sm:px-4 sm:py-3">
+      <div className="border-border bg-card/50 sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2 backdrop-blur-sm sm:px-4 sm:py-3">
         <div className="min-w-0 flex-1">
           <p className="text-secondary truncate font-mono text-xs sm:text-sm">
             {file.path}
@@ -231,7 +231,7 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
             {formatFileSize(localFileSize ?? file.size)}
           </p>
         </div>
-        <div className="flex flex-shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           {isMarkdown && !loading && !error && (
             <>
               <button
@@ -286,7 +286,7 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
                       <Copy className="h-3.5 w-3.5" />
                     )}
                   </button>
-                  <div className="bg-primary/20 h-4 w-[1px]" />
+                  <div className="bg-primary/20 h-4 w-px" />
                   <button
                     onClick={() => setSelectionState(null)}
                     className="text-primary/70 hover:text-primary hover:bg-primary/10 rounded p-1.5 transition-colors"

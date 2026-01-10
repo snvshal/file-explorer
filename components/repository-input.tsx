@@ -60,7 +60,7 @@ export function RepositoryInput({ onSearch, loading }: RepositoryInputProps) {
           !url.trim() ||
           !/^[a-zA-Z0-9-]+\/[a-zA-Z0-9-._]+$/.test(url.trim())
         }
-        className="from-primary to-secondary text-primary-foreground bg-gradient-to-r px-4 text-xs font-medium whitespace-nowrap transition-all duration-200 hover:opacity-90 sm:px-6 sm:text-sm"
+        className="from-primary to-secondary text-primary-foreground bg-linear-to-r px-4 text-xs font-medium whitespace-nowrap transition-all duration-200 hover:opacity-90 sm:px-6 sm:text-sm"
       >
         {loading ? "Loading..." : "Explore"}
       </Button>

@@ -97,7 +97,7 @@ export function FileTree({
             style={{ paddingLeft: `${level * 16 + 12}px` }}
           >
             {isFolder && (
-              <span className="text-muted-foreground flex h-4 w-4 flex-shrink-0 items-center justify-center">
+              <span className="text-muted-foreground flex h-4 w-4 shrink-0 items-center justify-center">
                 {isExpanded ? (
                   <ChevronDown className="h-3.5 w-3.5" />
                 ) : (
@@ -105,13 +105,13 @@ export function FileTree({
                 )}
               </span>
             )}
-            {!isFolder && <span className="w-4 flex-shrink-0" />}
-            <span className="text-foreground/60 group-hover:text-foreground/80 flex h-4 w-4 flex-shrink-0 items-center justify-center">
+            {!isFolder && <span className="w-4 shrink-0" />}
+            <span className="text-foreground/60 group-hover:text-foreground/80 flex h-4 w-4 shrink-0 items-center justify-center">
               {icon}
             </span>
             <span className="min-w-0 flex-1 truncate">{file.name}</span>
             {isFolder && children.length > 0 && (
-              <span className="bg-primary/15 text-primary ring-primary/30 ml-2 flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1">
+              <span className="bg-primary/15 text-primary ring-primary/30 ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1">
                 {children.length}
               </span>
             )}
@@ -127,11 +127,11 @@ export function FileTree({
 
   return (
     <div className="bg-card border-border flex h-full flex-col overflow-hidden rounded-lg border">
-      <div className="border-border flex flex-shrink-0 items-center justify-between gap-2 border-b px-3 py-2 sm:px-4 sm:py-3">
+      <div className="border-border flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2 sm:px-4 sm:py-3">
         <h2 className="text-foreground truncate text-xs font-semibold sm:text-sm">
           {sourceTitle}
         </h2>
-        <span className="bg-secondary/20 text-secondary ring-secondary/30 flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium ring-1">
+        <span className="bg-secondary/20 text-secondary ring-secondary/30 shrink-0 rounded-full px-2 py-1 text-xs font-medium ring-1">
           {files.length}
         </span>
       </div>

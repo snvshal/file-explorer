@@ -52,7 +52,7 @@ export function LocalFileUpload({
       <div className="flex items-center justify-center gap-2">
         {isLoading ? (
           <>
-            <div className="border-border border-t-primary h-4 w-4 flex-shrink-0 animate-spin rounded-full border-2" />
+            <div className="border-border border-t-primary h-4 w-4 shrink-0 animate-spin rounded-full border-2" />
             <span className="text-foreground/70 truncate text-xs sm:text-sm">
               Processing files...
             </span>
@@ -60,7 +60,7 @@ export function LocalFileUpload({
         ) : (
           <>
             <svg
-              className="text-muted-foreground h-4 w-4 flex-shrink-0"
+              className="text-muted-foreground h-4 w-4 shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
