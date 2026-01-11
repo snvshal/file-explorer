@@ -32,6 +32,31 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
     start: number;
     end: number;
   } | null>(null);
+  const [localImages, setLocalImages] = useState<Record<string, File>>({});
+
+  useEffect(() => {
+    if (!localFiles) {
+      setLocalImages({});
+      return;
+    }
+
+    const loadImages = async () => {
+      const images: Record<string, File> = {};
+
+      for (const [path, handle] of localFiles.entries()) {
+        if (handle.kind !== "file") continue;
+
+        if (isImageFile(path)) {
+          const file = await handle.getFile();
+          images[path.split("/").pop()!] = file; // key = filename
+        }
+      }
+
+      setLocalImages(images);
+    };
+
+    loadImages();
+  }, [localFiles]);
 
   useEffect(() => {
     // Reset selection when file changes
@@ -355,16 +380,12 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
             <MarkdownRenderer
               content={content}
               repoOwner={
-                typeof window !== "undefined"
-                  ? localStorage.getItem("current-repo-owner") || undefined
-                  : undefined
+                localStorage.getItem("current-repo-owner") || undefined
               }
-              repoName={
-                typeof window !== "undefined"
-                  ? localStorage.getItem("current-repo-name") || undefined
-                  : undefined
-              }
+              repoName={localStorage.getItem("current-repo-name") || undefined}
               filePath={file.path}
+              isLocalFile={localFiles?.has(file.path) ?? false}
+              localImages={localImages}
             />
           </div>
         ) : (

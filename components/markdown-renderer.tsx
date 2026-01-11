@@ -9,6 +9,8 @@ interface MarkdownRendererProps {
   repoOwner?: string;
   repoName?: string;
   filePath?: string;
+  isLocalFile: boolean;
+  localImages?: Record<string, File>;
 }
 
 const escapeHtml = (text: string) => {
@@ -20,21 +22,42 @@ const escapeHtml = (text: string) => {
     .replace(/'/g, "&#39;");
 };
 
+const normalizePath = (href: string) =>
+  href.replace(/^.\//, "").replace(/^public\//, "");
+
 export function MarkdownRenderer({
   content,
   baseUrl = "",
   repoOwner,
   repoName,
   filePath,
+  isLocalFile = false,
+  localImages,
 }: MarkdownRendererProps) {
   const html = useMemo(() => {
     const resolveImageUrl = (href: string): string => {
+      // Local markdown file
+      if (isLocalFile && localImages) {
+        const normalized = normalizePath(href);
+
+        const file =
+          localImages[normalized] || localImages[normalized.split("/").pop()!];
+
+        if (file) {
+          return URL.createObjectURL(file); // ✅ WORKS
+        }
+      }
+
+      // Absolute URL
       if (href.startsWith("http")) return href;
+
+      // GitHub mode
       if (!repoOwner || !repoName) return href;
 
       const fileDir = filePath
         ? filePath.split("/").slice(0, -1).join("/")
         : "";
+
       const resolvedPath = fileDir
         ? `${fileDir}/${href}`.replace(/\/+/g, "/")
         : href;
