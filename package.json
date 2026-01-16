@@ -1,6 +1,7 @@
 {
   "name": "snfe",
   "description": "Explore GitHub repos and local files instantly with beautiful syntax highlighting",
+  "type": "module",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
@@ -33,6 +34,8 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.1.2",
     "postcss": "^8.5",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",

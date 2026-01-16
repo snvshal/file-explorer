@@ -28,7 +28,7 @@ export default function FilePage({ params }: PageProps<"/[...path]">) {
       urlError: "",
     });
     router.replace("/");
-  }, [params, setData]);
+  }, [params, setData, router, slug.path]);
 
   return null;
 }

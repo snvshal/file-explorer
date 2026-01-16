@@ -12,6 +12,7 @@ const dirHandleCache = new Map<string, FileSystemDirectoryHandle>();
 
 async function verifyReadPermission(
   handle: FileSystemHandle,
+  requestIfNeeded: boolean = false,
 ): Promise<boolean> {
   const options = { mode: "read" as const };
 
@@ -19,7 +20,10 @@ async function verifyReadPermission(
     return true;
   }
 
-  if ((await handle.requestPermission(options)) === "granted") {
+  if (
+    requestIfNeeded &&
+    (await handle.requestPermission(options)) === "granted"
+  ) {
     return true;
   }
 
@@ -40,7 +44,7 @@ export async function requestDirectoryAccess(): Promise<{
 
     const dirHandle = await window.showDirectoryPicker();
 
-    if (!(await verifyReadPermission(dirHandle))) {
+    if (!(await verifyReadPermission(dirHandle, true))) {
       throw new Error(
         "Read permission denied. Please grant access to the directory.",
       );
@@ -80,7 +84,7 @@ export async function restoreDirectoryAccess(): Promise<{
 
     const dirHandle = stored.handle;
 
-    if (!(await verifyReadPermission(dirHandle))) {
+    if (!(await verifyReadPermission(dirHandle, false))) {
       await del("rootHandle");
       storedDirHandle = null;
       return null;

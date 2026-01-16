@@ -137,7 +137,7 @@ export function CodeHighlighter({
       }
     };
     highlightCode();
-  }, [code, language, resolvedTheme]);
+  }, [code, language, resolvedTheme, theme]);
 
   // Extract lines from the highlighted HTML
   const highlightedLines = useMemo(() => {

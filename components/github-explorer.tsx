@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { RepositoryInput } from "./repository-input";
 import { LocalFileUpload } from "./local-file-upload";
 import { FileTree } from "./file-tree";
@@ -80,6 +80,22 @@ export function GitHubExplorer({
     }
   }, [initialUrl]);
 
+  const findFileByPath = useCallback(
+    (fileList: GitHubFile[], targetPath: string): GitHubFile | null => {
+      for (const file of fileList) {
+        if (file.path === targetPath || file.path === `/${targetPath}`) {
+          return file;
+        }
+        if (file.type === "dir" && file.children) {
+          const found = findFileByPath(file.children, targetPath);
+          if (found) return found;
+        }
+      }
+      return null;
+    },
+    [],
+  );
+
   useEffect(() => {
     if (initialFilePath && files.length > 0 && !selectedFile) {
       const fileToSelect = findFileByPath(files, initialFilePath);
@@ -89,23 +105,7 @@ export function GitHubExplorer({
         setError(`File not found: ${initialFilePath}`);
       }
     }
-  }, [files, initialFilePath, selectedFile]);
-
-  const findFileByPath = (
-    fileList: GitHubFile[],
-    targetPath: string,
-  ): GitHubFile | null => {
-    for (const file of fileList) {
-      if (file.path === targetPath || file.path === `/${targetPath}`) {
-        return file;
-      }
-      if (file.type === "dir" && file.children) {
-        const found = findFileByPath(file.children, targetPath);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
+  }, [files, initialFilePath, selectedFile, findFileByPath]);
 
   const handleFetchRepository = async (url: string) => {
     setLoading(true);

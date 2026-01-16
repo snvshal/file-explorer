@@ -11,6 +11,7 @@ import {
   isVideoFile,
   isAudioFile,
 } from "@/lib/file-utils";
+import Image from "next/image";
 
 interface FilePreviewProps {
   file: GitHubFile | null;
@@ -357,10 +358,12 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
           </div>
         ) : isImage && mediaUrl ? (
           <div className="flex min-h-full items-center justify-center p-4">
-            <img
+            <Image
               src={mediaUrl || "/placeholder.svg"}
               alt={file.name}
-              className="border-border max-h-full max-w-full rounded-lg border object-contain"
+              width={100}
+              height={100}
+              className="border-border h-full max-h-full w-full max-w-full rounded-lg border object-contain"
             />
           </div>
         ) : isVideo && mediaUrl ? (

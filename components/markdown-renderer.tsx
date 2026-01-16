@@ -141,7 +141,7 @@ export function MarkdownRenderer({
 
     marked.use({ renderer });
     return marked(content);
-  }, [content, baseUrl, repoOwner, repoName, filePath]);
+  }, [content, repoOwner, repoName, filePath, isLocalFile, localImages]);
 
   return (
     <div className="text-foreground max-w-none leading-relaxed">
