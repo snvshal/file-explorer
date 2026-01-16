@@ -1,7 +1,6 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
-  "private": true,
+  "name": "snfe",
+  "description": "Explore GitHub repos and local files instantly with beautiful syntax highlighting",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
