@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, FolderOpen } from "lucide-react";
 import type { GitHubFile } from "@/lib/types";
 import { getFileIcon } from "@/lib/file-utils";
 
@@ -107,7 +107,7 @@ export function FileTree({
             )}
             {!isFolder && <span className="w-4 shrink-0" />}
             <span className="text-foreground/60 group-hover:text-foreground/80 flex h-4 w-4 shrink-0 items-center justify-center">
-              {icon}
+              {isFolder && isExpanded ? <FolderOpen /> : icon}
             </span>
             <span className="min-w-0 flex-1 truncate">{file.name}</span>
             {isFolder && children.length > 0 && (

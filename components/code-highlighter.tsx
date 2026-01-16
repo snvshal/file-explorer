@@ -209,7 +209,10 @@ export function CodeHighlighter({
                   )}
                 >
                   <td
-                    className="text-muted-foreground border-border/20 bg-card sticky left-0 border-r px-2 py-1 text-right align-top select-none sm:px-4"
+                    className={cn(
+                      "text-muted-foreground sticky left-0 border-r px-2 py-1 text-right align-top backdrop-blur-2xl select-none sm:px-4",
+                      isSelected ? "border-primary/20" : "border-border/20",
+                    )}
                     style={{
                       width: "var(--line-number-width)",
                       minWidth: "var(--line-number-width)",

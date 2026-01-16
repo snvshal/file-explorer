@@ -11,6 +11,7 @@ import {
   restoreDirectoryAccess,
   readDirectory,
 } from "@/lib/file-system-handler";
+import { Circle } from "lucide-react";
 
 const STORAGE_KEY = "file-explorer-state";
 
@@ -232,7 +233,7 @@ export function GitHubExplorer({
   return (
     <div className="bg-background selection:bg-primary/20 flex h-screen flex-col">
       {!explorationMode ? (
-        <div className="animate-in fade-in flex flex-1 flex-col items-center justify-center p-4 duration-500 sm:p-6">
+        <div className="animate-in fade-in flex flex-1 flex-col items-center justify-center p-4 duration-500 sm:p-8">
           <div className="absolute top-4 right-4">
             <ThemeToggle />
           </div>
@@ -314,24 +315,11 @@ export function GitHubExplorer({
               <div className="flex items-center gap-3 overflow-hidden">
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-80"
+                  className="flex cursor-pointer items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-80"
                   title="Back to Home"
                 >
-                  <div className="bg-primary/10 text-primary rounded-md p-1.5">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4"
-                    >
-                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                      <path d="M9 22V12h6v10" />
-                    </svg>
-                  </div>
-                  <span className="hidden sm:inline">File Explorer</span>
+                  <Circle className="h-4 w-4" />
+                  <span className="hidden uppercase sm:inline">snfe</span>
                 </button>
 
                 <div className="bg-border mx-1 h-4 w-px" />

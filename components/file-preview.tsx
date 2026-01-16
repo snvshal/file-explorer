@@ -288,7 +288,11 @@ export function FilePreview({ file, localFiles }: FilePreviewProps) {
               {(!isMarkdown || markdownView !== "preview") && (
                 <button
                   onClick={() => setCodeWrap((v) => !v)}
-                  className="text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded p-2 transition-colors"
+                  className={`rounded p-2 transition-colors ${
+                    codeWrap
+                      ? "bg-primary/20 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
+                  }`}
                   title="Toggle wrap"
                 >
                   <WrapText className="h-4 w-4" />
