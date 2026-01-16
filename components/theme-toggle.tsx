@@ -1,13 +1,9 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useState } from "react";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted] = useState(false);
-
-  if (!mounted) return null;
 
   return (
     <button
