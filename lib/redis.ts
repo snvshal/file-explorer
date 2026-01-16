@@ -1,20 +1,21 @@
-import Redis from "ioredis";
+import { Redis } from "@upstash/redis";
 
 let redis: Redis | null = null;
 
 export function getRedis() {
   if (!redis) {
-    const redisUrl =
-      process.env.NODE_ENV === "production"
-        ? process.env.REDIS_URL
-        : process.env.PUBLIC_REDIS_URL;
+    const url = process.env.KV_REST_API_URL;
+    const token = process.env.KV_REST_API_TOKEN;
 
-    if (!redisUrl) {
-      console.warn("Redis not configured. Caching disabled.");
+    if (!url || !token) {
+      console.warn("Upstash Redis not configured. Caching disabled.");
       return null;
     }
 
-    redis = new Redis(redisUrl);
+    redis = new Redis({
+      url,
+      token,
+    });
   }
 
   return redis;
@@ -24,9 +25,8 @@ export async function getCachedValue<T>(key: string): Promise<T | null> {
   try {
     const client = getRedis();
     if (!client) return null;
-
     const value = await client.get(key);
-    return value ? (JSON.parse(value) as T) : null;
+    return value as T | null;
   } catch (error) {
     console.error("Redis get error:", error);
     return null;
@@ -41,8 +41,7 @@ export async function setCachedValue<T>(
   try {
     const client = getRedis();
     if (!client) return false;
-
-    await client.set(key, JSON.stringify(value), "EX", expirationSeconds);
+    await client.setex(key, expirationSeconds, JSON.stringify(value));
     return true;
   } catch (error) {
     console.error("Redis set error:", error);
