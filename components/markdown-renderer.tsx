@@ -133,6 +133,12 @@ export function MarkdownRenderer({
       return `<em class="italic text-foreground">${text}</em>`;
     };
 
+    renderer.table = ({ header, rows }) => {
+      const headerHtml = `<thead class="[&_tr]:border-b"><tr>${header.map((cell) => `<th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">${marked.parseInline(cell.text)}</th>`).join("")}</tr></thead>`;
+      const bodyHtml = `<tbody class="[&_tr:last-child]:border-0">${rows.map((row) => `<tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">${row.map((cell) => `<td class="p-4 align-middle [&:has([role=checkbox])]:pr-0">${marked.parseInline(cell.text)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+      return `<div class="relative w-full overflow-auto my-6 rounded-md border"><table class="w-full caption-bottom text-sm">${headerHtml}${bodyHtml}</table></div>`;
+    };
+
     marked.use({ renderer });
     return marked(content);
   }, [content, baseUrl, repoOwner, repoName, filePath]);
