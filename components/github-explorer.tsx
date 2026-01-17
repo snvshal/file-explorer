@@ -11,7 +11,7 @@ import {
   restoreDirectoryAccess,
   readDirectory,
 } from "@/lib/file-system-handler";
-import { Circle } from "lucide-react";
+import Image from "next/image";
 
 const STORAGE_KEY = "file-explorer-state";
 
@@ -318,7 +318,12 @@ export function GitHubExplorer({
                   className="flex cursor-pointer items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-80"
                   title="Back to Home"
                 >
-                  <Circle className="h-4 w-4" />
+                  <Image
+                    src="/icon.png"
+                    width={20}
+                    height={20}
+                    alt="SNFE icon"
+                  />
                   <span className="hidden uppercase sm:inline">snfe</span>
                 </button>
 
